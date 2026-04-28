@@ -1,6 +1,6 @@
 # white dwarf sed fitting tool
 
-install using `pip install git+https://github.com/stefanarseneau/wdseds` which will install a command line tool:
+First, run `pip install git+https://github.com/stefanarseneau/wd_interpolator`, and then install using `pip install git+https://github.com/stefanarseneau/wdseds` which will install a command line tool:
 
 ```
 arseneau@CAS-685COM524:~$ fit-seds -h
