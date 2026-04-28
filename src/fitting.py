@@ -88,16 +88,17 @@ def fit_leastsq(df : pd.DataFrame,
 		fluxdict : dict, 
 		lambda_eff: np.array,
 		extinction_vec : np.array, 
+		fixedhe: float,
 		interp : scipy.interpolate, 
 		logg_function : scipy.interpolate,
 		units : str = "fnu",
 		outfile : str = None,
-		savesed: bool = True,
+		skipplots: bool = False,
 	) -> pd.DataFrame:
 	"""fit a dataframe using least squares"""
 	_ = util.check_valid(df)
 
-	if savesed:
+	if not skipplots:
 		os.makedirs("sedfigs", exist_ok=True)
 
 	fluxcols, e_fluxcols = map(list,zip(*fluxdict.values()))	
@@ -123,7 +124,7 @@ def fit_leastsq(df : pd.DataFrame,
 				nan_policy = 'omit'
 			)
 
-		if savesed:
+		if not skipplots:
 			plotting.plot_sed(
 				df.gaia_dr3_source_id.values[i].astype(np.int64),
 				row[fluxcols].values * 10**(-0.4*(extinction_vec*row.meanAV)), 
@@ -135,6 +136,7 @@ def fit_leastsq(df : pd.DataFrame,
 				res.params['logg'].value,
 				res.params['logg'].stderr,
 				row.parallax,
+				fixedhe,
 				interp, logg_function,
 				folder = "sedfigs"
 			)
@@ -163,7 +165,7 @@ def fit_leastsq(df : pd.DataFrame,
 		print(f"\nSaving to {outfile}\n")
 		data.to_parquet(f"{outfile}")
 
-	if savesed:
+	if not skipplots:
 		with tarfile.open("sedfigs.tar", "w") as tar:
 			# arcname avoids embedding full absolute paths
 			tar.add("sedfigs", arcname=os.path.basename("sedfigs"))
@@ -227,7 +229,7 @@ def pipeline(
 		numtasks : int = None,
 		fix_distance_av : bool = False,
 		prebuilt_fluxes : Optional[Path] = None,
-		saveplots: bool = False
+		skipplots: bool = False
 	):
 	"""run the pipeline and return either a list of chains or the dataframe"""
 	assert mode in ['leastsq', 'mcmc'], "Invalid fitting mode!"""
@@ -262,7 +264,7 @@ def pipeline(
 
 	if mode == 'leastsq':
 		return fit_leastsq(
-				synphot, fluxdict, lambda_eff, extinction_vec, interp, logg_function, units = units, outfile = outfile, savesed=saveplots)
+				synphot, fluxdict, lambda_eff, extinction_vec, fixedhe, interp, logg_function, units = units, outfile = outfile, skipplots=skipplots)
 	elif mode == 'mcmc':
 		return fit_mcmc(synphot, fluxdict, extinction_vec, interp, logg_function, units = units, use_gravz = use_gravz, outfile = outfile, fix_distance_av = fix_distance_av)
 	else:
@@ -291,7 +293,7 @@ def main():
 	parser.add_argument('--gravz',			 type=str, default=None)
 	parser.add_argument('--gravz_error',	 type=str, default=None)
 	parser.add_argument('--fixedhe',		 type=float, default=None,
-						help='Fixed He abundance (None = pure-H DA atmosphere)')
+						help='Fixed He abundance (None = pure-H DA atmosphere; 30 = pure H DB atmosphere)')
 	parser.add_argument('--skipplotting',    action='store_true', default=False,
 						help='Skip saving the plots?')
 	parser.add_argument('--fix_distance_av', action='store_true', default=False,
@@ -317,7 +319,7 @@ def main():
 		parallax=args.parallax, parallax_error=args.parallax_error,
 		meanAV=args.meanAV, gravz=args.gravz, gravz_error=args.gravz_error,
 		fix_distance_av=args.fix_distance_av, outfile=args.outpath,
-		saveplots=args.skipplotting
+		skipplots=args.skipplotting
 	)
 	if args.mode == 'leastsq':
 		results.to_parquet(args.outpath, index=False)

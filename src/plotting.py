@@ -10,8 +10,6 @@ logging.getLogger("matplotlib").setLevel(logging.ERROR)
 import interpolator
 from . import likelihoods
 
-spec = interpolator.atmos.WarwickSpectrum('1d_da_nlte', units='fnu', wavl_range=(2500, 11000))
-
 matplotlib.rcParams.update({
     "text.usetex": True,
     "font.family": "serif",
@@ -23,11 +21,20 @@ matplotlib.rcParams.update({
 
 plt.style.use(os.path.join(os.path.dirname(__file__), "stefan.mplstyle"))
 
-def plot_sed(sourceid, fl, e_fl, band_names, lambda_effs, teff, e_teff, logg, e_logg, plx, interp, logg_function, folder = "sedfigs"):
+def plot_sed(sourceid, fl, e_fl, band_names, lambda_effs, teff, e_teff, logg, e_logg, plx, fixedhe, interp, logg_function, folder = "sedfigs"):
     theta = np.array([teff, logg, 1000 / plx, 0])
     fl_model_phot = likelihoods.get_model_flux(theta, interp, logg_function=logg_function) * 1e23
 
-    fl_surface = 4 * np.pi * spec.model_spec((teff, logg))   # erg s⁻¹ cm⁻² Hz⁻¹
+    if fixedhe == 30:
+        spec = interpolator.atmos.WarwickSpectrum('1d_db_nlte', units='fnu', wavl_range=(2500, 11000))
+        fl_surface = 4 * np.pi * spec.model_spec((teff, logg, fixedhe))   # erg s⁻¹ cm⁻² Hz⁻¹
+    elif fixedhe is not None:
+        spec = interpolator.atmos.WarwickSpectrum('1d_dba_nlte', units='fnu', wavl_range=(2500, 11000))
+        fl_surface = 4 * np.pi * spec.model_spec((teff, logg, fixedhe))   # erg s⁻¹ cm⁻² Hz⁻¹
+    else:
+        spec = interpolator.atmos.WarwickSpectrum('1d_da_nlte', units='fnu', wavl_range=(2500, 11000))
+        fl_surface = 4 * np.pi * spec.model_spec((teff, logg))   # erg s⁻¹ cm⁻² Hz⁻¹
+
     radius = logg_function(teff, logg)
     radius_m = radius * 6.957e8    # R_sun → m
     dist_m   = (1000 / plx)   * 3.086775e16  # pc → m
