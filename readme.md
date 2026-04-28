@@ -30,6 +30,6 @@ options:
   --fix_distance_av     Fix distance and AV at prior means rather than sampling them in MCMC
 ```
 
-to fit the seds in `tests/`, run the following command from inside of that directory:
+to fit the sed, run the following command:
 
 `fit-seds sample_vincent_dz_massive.csv out.csv leastsq --systems sdss,panstarrs,skymapper`
