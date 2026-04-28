@@ -27,9 +27,10 @@ options:
   --gravz GRAVZ
   --gravz_error GRAVZ_ERROR
   --fixedhe FIXEDHE     Fixed He abundance (None = pure-H DA atmosphere)
+  --skipplotting        Skip saving the plots?
   --fix_distance_av     Fix distance and AV at prior means rather than sampling them in MCMC
 ```
 
 to fit the sed, run the following command:
 
-`fit-seds sample_vincent_dz_massive.csv out.csv leastsq --systems sdss,panstarrs,skymapper`
+`fit-seds sample_vincent_dz_massive.csv out.csv leastsq --systems sdss,panstarrs,skymapper --skipplotting`

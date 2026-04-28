@@ -227,6 +227,7 @@ def pipeline(
 		numtasks : int = None,
 		fix_distance_av : bool = False,
 		prebuilt_fluxes : Optional[Path] = None,
+		saveplots: bool = False
 	):
 	"""run the pipeline and return either a list of chains or the dataframe"""
 	assert mode in ['leastsq', 'mcmc'], "Invalid fitting mode!"""
@@ -261,7 +262,7 @@ def pipeline(
 
 	if mode == 'leastsq':
 		return fit_leastsq(
-				synphot, fluxdict, lambda_eff, extinction_vec, interp, logg_function, units = units, outfile = outfile)
+				synphot, fluxdict, lambda_eff, extinction_vec, interp, logg_function, units = units, outfile = outfile, savesed=saveplots)
 	elif mode == 'mcmc':
 		return fit_mcmc(synphot, fluxdict, extinction_vec, interp, logg_function, units = units, use_gravz = use_gravz, outfile = outfile, fix_distance_av = fix_distance_av)
 	else:
@@ -291,6 +292,8 @@ def main():
 	parser.add_argument('--gravz_error',	 type=str, default=None)
 	parser.add_argument('--fixedhe',		 type=float, default=None,
 						help='Fixed He abundance (None = pure-H DA atmosphere)')
+	parser.add_argument('--skipplotting',    action='store_true', default=False,
+						help='Skip saving the plots?')
 	parser.add_argument('--fix_distance_av', action='store_true', default=False,
 						help='Fix distance and AV at prior means rather than sampling them in MCMC')
 	args = parser.parse_args()
@@ -314,6 +317,7 @@ def main():
 		parallax=args.parallax, parallax_error=args.parallax_error,
 		meanAV=args.meanAV, gravz=args.gravz, gravz_error=args.gravz_error,
 		fix_distance_av=args.fix_distance_av, outfile=args.outpath,
+		saveplots=args.skipplotting
 	)
 	if args.mode == 'leastsq':
 		results.to_parquet(args.outpath, index=False)

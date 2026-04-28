@@ -4,6 +4,9 @@ matplotlib.use('Agg')
 import numpy as np
 import os
 
+import logging
+logging.getLogger("matplotlib").setLevel(logging.ERROR)
+
 import interpolator
 from . import likelihoods
 
