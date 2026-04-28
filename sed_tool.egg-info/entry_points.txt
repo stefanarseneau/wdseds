@@ -1,0 +1,4 @@
+[console_scripts]
+download-mist-data = sedtool.data:_download_cli
+fit-seds = sedtool.fitting:main
+measure-ages = sedtool.measureages:main
