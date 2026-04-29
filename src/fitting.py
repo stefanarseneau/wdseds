@@ -125,21 +125,29 @@ def fit_leastsq(df : pd.DataFrame,
 			)
 
 		if not skipplots:
-			plotting.plot_sed(
-				df.gaia_dr3_source_id.values[i].astype(np.int64),
-				row[fluxcols].values * 10**(-0.4*(extinction_vec*row.meanAV)), 
-				row[e_fluxcols].values,
-				[sub[0] for sub in fluxdict.values()],
-				lambda_eff,
-				res.params['teff'].value, 
-				res.params['teff'].stderr,
-				res.params['logg'].value,
-				res.params['logg'].stderr,
-				row.parallax,
-				fixedhe,
-				interp, logg_function,
-				folder = "sedfigs"
-			)
+			try:
+				plotting.plot_sed(
+					df.gaia_dr3_source_id.values[i].astype(np.int64),
+					row[fluxcols].values * 10**(-0.4*(extinction_vec*row.meanAV)), 
+					row[e_fluxcols].values,
+					[sub[0] for sub in fluxdict.values()],
+					lambda_eff,
+					res.params['teff'].value, 
+					res.params['teff'].stderr,
+					res.params['logg'].value,
+					res.params['logg'].stderr,
+					row.parallax,
+					fixedhe,
+					interp, logg_function,
+					folder = "sedfigs"
+				)
+			except ValueError as v:
+				logging.warn(
+					f"Error in plotting {df.gaia_dr3_source_id.values[i].astype(np.int64)}",
+					f"with teff={res.params['teff'].value}+/-{res.params['teff'].stderr}",
+					f"and logg={res.params['logg'].value}+/-{res.params['logg'].stderr}! {v}"
+				)
+				continue
 
 		source_ids.append(df.gaia_dr3_source_id.values[i].astype(np.int64))
 		teff.append(res.params['teff'].value)	; e_teff.append(res.params['teff'].stderr)		 
